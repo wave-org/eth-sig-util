@@ -1,11 +1,11 @@
 import {
-  bufferToHex,
+  bytesToHex,
   ecsign,
   hashPersonalMessage,
   publicToAddress,
-  toBuffer,
-  ToBufferInputTypes,
-} from '@ethereumjs/util';
+  toBytes,
+  ToBytesInputTypes,
+} from '@doomjs/ethereumjs-util';
 
 import {
   concatSig,
@@ -30,7 +30,7 @@ export function personalSign({
   data,
 }: {
   privateKey: Buffer;
-  data: ToBufferInputTypes;
+  data: ToBytesInputTypes;
 }): string {
   if (isNullish(data)) {
     throw new Error('Missing data parameter');
@@ -41,7 +41,11 @@ export function personalSign({
   const message = legacyToBuffer(data);
   const msgHash = hashPersonalMessage(message);
   const sig = ecsign(msgHash, privateKey);
-  const serialized = concatSig(toBuffer(sig.v), sig.r, sig.s);
+  const serialized = concatSig(
+    toBuffer(sig.v),
+    toBuffer(sig.r),
+    toBuffer(sig.s),
+  );
   return serialized;
 }
 
@@ -58,7 +62,7 @@ export function recoverPersonalSignature({
   data,
   signature,
 }: {
-  data: ToBufferInputTypes;
+  data: ToBytesInputTypes;
   signature: string;
 }): string {
   if (isNullish(data)) {
@@ -69,7 +73,7 @@ export function recoverPersonalSignature({
 
   const publicKey = getPublicKeyFor(data, signature);
   const sender = publicToAddress(publicKey);
-  const senderHex = bufferToHex(sender);
+  const senderHex = bytesToHex(sender);
   return senderHex;
 }
 
@@ -86,7 +90,7 @@ export function extractPublicKey({
   data,
   signature,
 }: {
-  data: ToBufferInputTypes;
+  data: ToBytesInputTypes;
   signature: string;
 }): string {
   if (isNullish(data)) {
@@ -107,9 +111,17 @@ export function extractPublicKey({
  * @returns The public key of the signer.
  */
 function getPublicKeyFor(
-  message: ToBufferInputTypes,
+  message: ToBytesInputTypes,
   signature: string,
 ): Buffer {
   const messageHash = hashPersonalMessage(legacyToBuffer(message));
-  return recoverPublicKey(messageHash, signature);
+  return recoverPublicKey(Buffer.from(messageHash), signature);
+}
+
+function bufferToHex(buffer: Buffer): string {
+  return '0x' + buffer.toString('hex');
+}
+
+function toBuffer(input: ToBytesInputTypes): Buffer {
+  return Buffer.from(toBytes(input));
 }

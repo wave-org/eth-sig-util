@@ -2,7 +2,8 @@ import {
   addHexPrefix,
   privateToAddress,
   privateToPublic,
-} from '@ethereumjs/util';
+  bytesToHex,
+} from '@doomjs/ethereumjs-util';
 
 import {
   extractPublicKey,
@@ -29,7 +30,7 @@ describe('personalSign', function () {
   });
 
   it('should recover the address from a signature', function () {
-    const address = addHexPrefix(privateToAddress(privateKey).toString('hex'));
+    const address = bytesToHex(privateToAddress(privateKey));
 
     expect(
       recoverPersonalSignature({
@@ -40,7 +41,7 @@ describe('personalSign', function () {
   });
 
   it('should recover the public key from a signature', function () {
-    const publicKey = addHexPrefix(privateToPublic(privateKey).toString('hex'));
+    const publicKey = bytesToHex(privateToPublic(privateKey));
 
     expect(
       extractPublicKey({
@@ -51,7 +52,7 @@ describe('personalSign', function () {
   });
 
   it('should sign a message and recover the address of the signer', function () {
-    const address = addHexPrefix(privateToAddress(privateKey).toString('hex'));
+    const address = bytesToHex(privateToAddress(privateKey));
     const signature = personalSign({
       privateKey,
       data: helloWorldMessage,
@@ -66,7 +67,7 @@ describe('personalSign', function () {
   });
 
   it('should sign a message and recover the public key of the signer', function () {
-    const publicKey = addHexPrefix(privateToPublic(privateKey).toString('hex'));
+    const publicKey = bytesToHex(privateToPublic(privateKey));
     const signature = personalSign({
       privateKey,
       data: helloWorldMessage,

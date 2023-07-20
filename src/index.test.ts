@@ -5,8 +5,6 @@ describe('exports', () => {
   it('should have all expected exports', () => {
     expect(Object.keys(sigUtil)).toMatchInlineSnapshot(`
 Array [
-  "concatSig",
-  "normalize",
   "personalSign",
   "recoverPersonalSignature",
   "extractPublicKey",
@@ -21,6 +19,13 @@ Array [
   "decrypt",
   "decryptSafely",
   "getEncryptionPublicKey",
+  "padWithZeroes",
+  "isNullish",
+  "legacyToBuffer",
+  "concatSig",
+  "recoverPublicKey",
+  "normalize",
+  "numberToBuffer",
 ]
 `);
   });

@@ -1,14 +1,14 @@
 import {
   addHexPrefix,
-  bufferToHex,
-  bufferToInt,
+  bytesToHex,
+  bytesToInt,
   ecrecover,
   fromRpcSig,
   fromSigned,
-  toBuffer,
-  ToBufferInputTypes,
+  toBytes,
+  ToBytesInputTypes,
   toUnsigned,
-} from '@ethereumjs/util';
+} from '@doomjs/ethereumjs-util';
 import { intToHex, isHexString, stripHexPrefix } from 'ethjs-util';
 
 /**
@@ -57,10 +57,10 @@ export function isNullish(value) {
  * @param value - The value to convert to a Buffer.
  * @returns The given value as a Buffer.
  */
-export function legacyToBuffer(value: ToBufferInputTypes) {
+export function legacyToBuffer(value: ToBytesInputTypes) {
   return typeof value === 'string' && !isHexString(value)
     ? Buffer.from(value)
-    : toBuffer(value);
+    : Buffer.from(toBytes(value));
 }
 
 /**
@@ -74,9 +74,9 @@ export function legacyToBuffer(value: ToBufferInputTypes) {
 export function concatSig(v: Buffer, r: Buffer, s: Buffer): string {
   const rSig = fromSigned(r);
   const sSig = fromSigned(s);
-  const vSig = bufferToInt(v);
-  const rStr = padWithZeroes(toUnsigned(rSig).toString('hex'), 64);
-  const sStr = padWithZeroes(toUnsigned(sSig).toString('hex'), 64);
+  const vSig = bytesToInt(v);
+  const rStr = padWithZeroes(stripHexPrefix(bytesToHex(toUnsigned(rSig))), 64);
+  const sStr = padWithZeroes(stripHexPrefix(bytesToHex(toUnsigned(sSig))), 64);
   const vStr = stripHexPrefix(intToHex(vSig));
   return addHexPrefix(rStr.concat(sStr, vStr));
 }
@@ -93,7 +93,9 @@ export function recoverPublicKey(
   signature: string,
 ): Buffer {
   const sigParams = fromRpcSig(signature);
-  return ecrecover(messageHash, sigParams.v, sigParams.r, sigParams.s);
+  return Buffer.from(
+    ecrecover(messageHash, sigParams.v, sigParams.r, sigParams.s),
+  );
 }
 
 /**
@@ -111,8 +113,8 @@ export function normalize(input: number | string): string | undefined {
     if (input < 0) {
       return '0x';
     }
-    const buffer = toBuffer(input);
-    input = bufferToHex(buffer);
+    const bytes = toBytes(input);
+    input = bytesToHex(bytes);
   }
 
   if (typeof input !== 'string') {

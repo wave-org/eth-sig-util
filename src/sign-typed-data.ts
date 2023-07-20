@@ -1,10 +1,10 @@
 import {
-  arrToBufArr,
-  bufferToHex,
+  // arrToBufArr,
+  bytesToHex,
   ecsign,
   publicToAddress,
-  toBuffer,
-} from '@ethereumjs/util';
+  toBytes,
+} from '@doomjs/ethereumjs-util';
 import { keccak256 } from 'ethereum-cryptography/keccak';
 import { isHexString } from 'ethjs-util';
 
@@ -462,7 +462,7 @@ export const TypedDataUtils = {
  */
 export function typedSignatureHash(typedData: TypedDataV1Field[]): string {
   const hashBuffer = _typedSignatureHash(typedData);
-  return bufferToHex(hashBuffer);
+  return bytesToHex(hashBuffer);
 }
 
 /**
@@ -559,7 +559,11 @@ export function signTypedData<
       ? _typedSignatureHash(data as TypedDataV1)
       : TypedDataUtils.eip712Hash(data as TypedMessage<T>, version);
   const sig = ecsign(messageHash, privateKey);
-  return concatSig(toBuffer(sig.v), sig.r, sig.s);
+  return concatSig(
+    Buffer.from(toBytes(sig.v)),
+    Buffer.from(sig.r),
+    Buffer.from(sig.s),
+  );
 }
 
 /**
@@ -598,5 +602,22 @@ export function recoverTypedSignature<
       : TypedDataUtils.eip712Hash(data as TypedMessage<T>, version);
   const publicKey = recoverPublicKey(messageHash, signature);
   const sender = publicToAddress(publicKey);
-  return bufferToHex(sender);
+  return bytesToHex(sender);
+}
+
+type NestedUint8Array = Array<Uint8Array | NestedUint8Array>;
+type NestedBufferArray = Array<Buffer | NestedBufferArray>;
+
+function arrToBufArr(arr: Uint8Array): Buffer;
+function arrToBufArr(arr: NestedUint8Array): NestedBufferArray;
+function arrToBufArr(
+  arr: Uint8Array | NestedUint8Array,
+): Buffer | NestedBufferArray;
+function arrToBufArr(
+  arr: Uint8Array | NestedUint8Array,
+): Buffer | NestedBufferArray {
+  if (!Array.isArray(arr)) {
+    return Buffer.from(arr);
+  }
+  return arr.map((a) => arrToBufArr(a));
 }

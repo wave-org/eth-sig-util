@@ -4,13 +4,13 @@
 /* eslint jsdoc/require-param-description: 0 */
 
 import {
-  ToBufferInputTypes,
-  toBuffer,
+  ToBytesInputTypes,
+  toBytes,
   setLengthRight,
   setLengthLeft,
   isHexPrefixed,
   zeros,
-} from '@ethereumjs/util';
+} from '@doomjs/ethereumjs-util';
 import BN from 'bn.js';
 import { stripHexPrefix } from 'ethjs-util';
 
@@ -116,7 +116,7 @@ export function parseNumber(arg: string | number | BN): BN {
  */
 function solidityHexValue(
   type: string,
-  value: ToBufferInputTypes,
+  value: ToBytesInputTypes,
   bitsize: number | null,
 ): Buffer {
   // pass in bitsize = null if use default bitsize
@@ -151,7 +151,7 @@ function solidityHexValue(
     if (bitsize) {
       bytesize = bitsize / 8;
     }
-    return setLengthLeft(toBuffer(value), bytesize);
+    return Buffer.from(setLengthLeft(toBytes(value), bytesize));
   } else if (type.startsWith('bytes')) {
     const size = parseTypeN(type);
     if (size < 1 || size > 32) {
@@ -161,7 +161,7 @@ function solidityHexValue(
     if (typeof value === 'number') {
       value = normalize(value);
     }
-    return setLengthRight(toBuffer(value), size);
+    return Buffer.from(setLengthRight(toBytes(value), size));
   } else if (type.startsWith('uint')) {
     const size = parseTypeN(type);
     if (size % 8 || size < 8 || size > 256) {
@@ -338,7 +338,7 @@ function encodeSingle(
 
     // TODO: fix types here
     const nArg = typeof arg === 'number' ? normalize(arg) : arg;
-    return setLengthRight(toBuffer(nArg as string), 32);
+    return Buffer.from(setLengthRight(toBytes(nArg as string), 32));
   } else if (type.startsWith('uint')) {
     const size = parseTypeN(type);
     if (size % 8 || size < 8 || size > 256) {
